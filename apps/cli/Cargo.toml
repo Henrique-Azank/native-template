@@ -1,0 +1,18 @@
+[package]
+name = "template-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "template-cli"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+template-engine = { workspace = true }
+template-mcp = { workspace = true }
+serde_json = { workspace = true }

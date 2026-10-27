@@ -1,0 +1,7 @@
+
+# Ignore build artifacts and temporary files
+/target
+**/*.rs.bk
+*.DS_Store
+.idea/
+.vscode/
