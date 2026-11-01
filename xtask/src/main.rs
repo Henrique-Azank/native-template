@@ -3,15 +3,20 @@
 //! - `cargo xtask layers`: verify architectural layer boundaries
 //! - `cargo xtask ci`: run fmt, clippy, tests, and layer checks
 //! - `cargo xtask wasm`: verify WebAssembly compilation
+//! - `cargo xtask version [set X.Y.Z]`: read or set the workspace version
+//! - `cargo xtask ico <out.ico> <in.png>...`: pack PNGs into a Windows .ico file
 
+mod ico;
 mod layers;
+mod version;
 
 use std::path::PathBuf;
 use std::process::{Command, exit};
 
 fn main() {
-    let mut args = std::env::args().skip(1);
-    let task = args.next().unwrap_or_else(|| "ci".into());
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let task = args.first().map(String::as_str).unwrap_or("ci");
+    let rest: Vec<&str> = args.iter().skip(1).map(String::as_str).collect();
 
     let root = match std::env::var("CARGO_MANIFEST_DIR") {
         Ok(dir) => PathBuf::from(dir)
@@ -21,9 +26,21 @@ fn main() {
         Err(_) => PathBuf::from("."),
     };
 
-    match task.as_str() {
+    match task {
         "layers" => {
             if !layers::check(&root) {
+                exit(1);
+            }
+        }
+        "version" => {
+            if let Err(e) = version::run(&root, &rest) {
+                eprintln!("xtask version: {e}");
+                exit(1);
+            }
+        }
+        "ico" => {
+            if let Err(e) = ico::run(&rest) {
+                eprintln!("xtask ico: {e}");
                 exit(1);
             }
         }
@@ -94,7 +111,7 @@ fn main() {
             println!("==> CI passed successfully!");
         }
         other => {
-            eprintln!("Unknown task `{other}`. Available: layers, ci, wasm");
+            eprintln!("Unknown task `{other}`. Available: layers, ci, wasm, version, ico");
             exit(1);
         }
     }

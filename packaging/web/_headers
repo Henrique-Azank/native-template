@@ -1,0 +1,17 @@
+# Cloudflare Pages / Netlify headers for TemplateApp WASM bundle.
+# Trunk fingerprints the .wasm and .js filenames, so they can be cached
+# immutably; index.html must revalidate on each deploy.
+
+/*.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: same-origin
+
+/*.js
+   Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: same-origin

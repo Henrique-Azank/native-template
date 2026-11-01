@@ -10,6 +10,12 @@ fn main() {
     let subcommand = args.first().map(|s| s.as_str()).unwrap_or("help");
 
     match subcommand {
+        "--version" | "-V" | "version" => {
+            let ver = env!("CARGO_PKG_VERSION");
+            let sha = option_env!("TEMPLATE_BUILD_SHA").unwrap_or("dev");
+            let date = option_env!("TEMPLATE_BUILD_DATE").unwrap_or("local");
+            println!("template-cli {ver} ({sha} {date})");
+        }
         "mcp" => {
             let mut server = McpServer::new();
             if let Err(e) = server.run_stdio() {
@@ -59,6 +65,9 @@ fn main() {
             );
             println!(
                 "  template-cli info                              Display active document info"
+            );
+            println!(
+                "  template-cli --version                         Print version and build metadata"
             );
         }
     }

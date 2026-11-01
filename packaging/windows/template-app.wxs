@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TemplateApp MSI (WiX Toolset v5: `dotnet tool install -g wix --version 5.0.2`). Built by package.ps1:
+
+    wix build template-app.wxs -arch x64 -d Version=0.1.0 -d BinDir=... -d IconPath=... -o out.msi
+
+  IMPORTANT: Replace UpgradeCode with a freshly generated GUID for your application and never change it
+  afterward, so subsequent releases upgrade in-place rather than installing side-by-side.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="TemplateApp"
+      Manufacturer="Example Corp"
+      Version="$(var.Version)"
+      UpgradeCode="A1B2C3D4-E5F6-4789-ABCD-EF0123456789"
+      Scope="perMachine"
+      Compressed="yes"
+      Language="1033">
+    <SummaryInformation Description="TemplateApp Desktop Application" Manufacturer="Example Corp" />
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of TemplateApp is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="TemplateAppIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="TemplateAppIcon.ico" />
+
+    <!-- Desktop shortcut opt-in persistence across upgrades -->
+    <Property Id="DESKTOPSHORTCUT" Secure="yes" />
+    <Property Id="SAVEDDESKTOPSHORTCUT" Secure="yes">
+      <RegistrySearch Id="FindDesktopShortcutPreference" Root="HKLM"
+          Key="Software\TemplateApp\Installer" Name="DesktopShortcut" Type="raw" />
+    </Property>
+    <SetProperty Id="DESKTOPSHORTCUT" Action="LoadDesktopShortcutPreference" Value="1"
+        After="AppSearch" Sequence="first"
+        Condition="NOT DESKTOPSHORTCUT AND SAVEDDESKTOPSHORTCUT = &quot;1&quot;" />
+    <SetProperty Id="DESKTOPSHORTCUT" Action="DefaultDesktopShortcut" Value="0"
+        After="LoadDesktopShortcutPreference" Sequence="first" Condition="NOT DESKTOPSHORTCUT" />
+    <SetProperty Id="DesktopShortcutChoice" Value="1" After="DefaultDesktopShortcut"
+        Sequence="ui" Condition="DESKTOPSHORTCUT = &quot;1&quot;" />
+
+    <Property Id="DefaultUIFont" Value="TemplateAppUIFont" />
+    <UI>
+      <TextStyle Id="TemplateAppUIFont" FaceName="Segoe UI" Size="9" />
+      <Dialog Id="DesktopShortcutDlg" Width="320" Height="150" Title="TemplateApp Setup" NoMinimize="yes">
+        <Control Id="Heading" Type="Text" X="15" Y="15" Width="290" Height="20" Text="Install TemplateApp" />
+        <Control Id="Description" Type="Text" X="15" Y="40" Width="290" Height="28"
+            Text="Install TemplateApp for everyone who uses this computer." />
+        <Control Id="DesktopShortcutCheckbox" Type="CheckBox" X="15" Y="76" Width="290" Height="18"
+            Property="DesktopShortcutChoice" CheckBoxValue="1" Text="Create a &amp;desktop shortcut" />
+        <Control Id="Install" Type="PushButton" X="165" Y="118" Width="65" Height="20"
+            Default="yes" ElevationShield="yes" Text="&amp;Install">
+          <Publish Property="DESKTOPSHORTCUT" Value="1" Condition="DesktopShortcutChoice" />
+          <Publish Property="DESKTOPSHORTCUT" Value="0" Condition="NOT DesktopShortcutChoice" />
+          <Publish Event="EndDialog" Value="Return" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="240" Y="118" Width="65" Height="20" Cancel="yes" Text="Cancel">
+          <Publish Event="EndDialog" Value="Exit" />
+        </Control>
+      </Dialog>
+
+      <InstallUISequence>
+        <Show Dialog="DesktopShortcutDlg" Before="ExecuteAction" Condition="NOT Installed" />
+      </InstallUISequence>
+    </UI>
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="TemplateApp" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Bitness="always64">
+        <File Id="TemplateDesktopExe" Source="$(var.BinDir)\template-desktop.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut"
+              Directory="ProgramMenuFolder"
+              Name="TemplateApp"
+              Description="TemplateApp Desktop Application"
+              WorkingDirectory="INSTALLFOLDER"
+              Icon="TemplateAppIcon.ico"
+              Advertise="yes" />
+        </File>
+        <!-- App Paths: Win+R `template-desktop` -->
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\template-desktop.exe">
+          <RegistryValue Type="string" Value="[INSTALLFOLDER]template-desktop.exe" />
+          <RegistryValue Name="Path" Type="string" Value="[INSTALLFOLDER]" />
+        </RegistryKey>
+      </Component>
+
+      <Component Id="CliExecutable" Bitness="always64">
+        <File Id="TemplateCliExe" Source="$(var.BinDir)\template-cli.exe" KeyPath="yes" />
+      </Component>
+
+      <Component Id="DesktopShortcutComponent" Directory="DesktopFolder" Condition="DESKTOPSHORTCUT = &quot;1&quot;">
+        <RegistryValue Root="HKMU" Key="Software\TemplateApp\Installer"
+            Name="DesktopShortcut" Type="string" Value="1" KeyPath="yes" />
+        <Shortcut Id="DesktopShortcut"
+            Directory="DesktopFolder"
+            Name="TemplateApp"
+            Description="TemplateApp Desktop Application"
+            Target="[INSTALLFOLDER]template-desktop.exe"
+            WorkingDirectory="INSTALLFOLDER"
+            Icon="TemplateAppIcon.ico" />
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="Complete" Title="TemplateApp" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Package>
+</Wix>

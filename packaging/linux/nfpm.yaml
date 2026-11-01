@@ -1,0 +1,74 @@
+# nFPM configuration for TemplateApp (.deb + .rpm).
+# Invoked by packaging/linux/package.sh with VERSION, DEB_ARCH, STAGE_USR exported.
+name: template-app
+arch: ${DEB_ARCH}
+platform: linux
+version: ${VERSION}
+release: 1
+section: utils
+priority: optional
+maintainer: ${TEMPLATE_MAINTAINER}
+description: |
+  Clean-room, Rust-native cross-platform desktop application template.
+  Includes the template-desktop GUI application and the template-cli command-line tool.
+vendor: Example Corp
+homepage: https://github.com/example/native-template
+license: MIT OR Apache-2.0
+
+overrides:
+  deb:
+    depends:
+      - libc6 (>= 2.31)
+      - libgcc-s1
+      - libxkbcommon0
+      - libvulkan1 | libegl1
+    recommends:
+      - libwayland-client0
+      - libx11-6
+      - libxcursor1
+      - libxi6
+      - libxrandr2
+      - xdg-utils
+  rpm:
+    depends:
+      - glibc
+      - libgcc
+      - libxkbcommon
+      - vulkan-loader
+    recommends:
+      - libwayland-client
+      - libX11
+      - libXcursor
+      - libXi
+      - libXrandr
+      - xdg-utils
+
+contents:
+  - src: ${STAGE_USR}/bin/template-desktop
+    dst: /usr/bin/template-desktop
+    file_info:
+      mode: 0755
+  - src: ${STAGE_USR}/bin/template-cli
+    dst: /usr/bin/template-cli
+    file_info:
+      mode: 0755
+  - src: ${STAGE_USR}/share/applications/com.example.templateapp.desktop
+    dst: /usr/share/applications/com.example.templateapp.desktop
+    file_info:
+      mode: 0644
+  - src: ${STAGE_USR}/share/metainfo/com.example.templateapp.metainfo.xml
+    dst: /usr/share/metainfo/com.example.templateapp.metainfo.xml
+    file_info:
+      mode: 0644
+  - src: ${STAGE_USR}/share/mime/packages/com.example.templateapp.xml
+    dst: /usr/share/mime/packages/com.example.templateapp.xml
+    file_info:
+      mode: 0644
+  - src: ${STAGE_USR}/share/icons/hicolor
+    dst: /usr/share/icons/hicolor
+  - src: ${STAGE_USR}/share/doc/template-app
+    dst: /usr/share/doc/template-app
+
+scripts:
+  postinstall: packaging/linux/postinst.sh
+  postremove: packaging/linux/postinst.sh

@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=TemplateApp
+GenericName=Desktop Application
+Comment=High-performance Rust-native desktop application
+Exec=template-desktop %F
+TryExec=template-desktop
+Icon=com.example.templateapp
+Terminal=false
+Categories=Utility;Development;
+MimeType=application/x-templateapp-project;
+Keywords=template;rust;egui;native;desktop;
+StartupNotify=true
+StartupWMClass=template-desktop

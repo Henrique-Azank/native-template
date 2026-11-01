@@ -1,0 +1,56 @@
+//! Windows resource embedding template (`apps/desktop/build.rs`).
+//!
+//! Copy this file to `apps/desktop/build.rs` and add:
+//! ```toml
+//! [target.'cfg(windows)'.build-dependencies]
+//! winresource = "0.1"
+//! ```
+//! to `apps/desktop/Cargo.toml` to embed `assets/app-icon/template-app.ico` and
+//! `VERSIONINFO` metadata into `template-desktop.exe`.
+//!
+//! Set `TEMPLATE_REQUIRE_WINRES=1` in release CI (`packaging/windows/package.ps1`
+//! sets this automatically) so a missing `.ico` or `rc.exe` fails the build
+//! instead of producing an iconless executable.
+
+fn main() {
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-env-changed=TEMPLATE_REQUIRE_WINRES");
+
+    #[cfg(windows)]
+    embed_windows_resources();
+}
+
+#[cfg(windows)]
+fn embed_windows_resources() {
+    use std::path::Path;
+
+    let require = std::env::var("TEMPLATE_REQUIRE_WINRES")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
+
+    let ico = Path::new("../../assets/app-icon/template-app.ico");
+    println!("cargo:rerun-if-changed={}", ico.display());
+
+    if !ico.exists() {
+        let msg = format!("Windows icon not found at {}", ico.display());
+        if require {
+            panic!("{msg} (TEMPLATE_REQUIRE_WINRES=1)");
+        }
+        println!("cargo:warning={msg}; skipping icon embedding");
+        return;
+    }
+
+    let mut res = winresource::WindowsResource::new();
+    res.set_icon(ico.to_str().unwrap_or(""));
+    res.set("ProductName", "TemplateApp");
+    res.set("FileDescription", "TemplateApp — Native Desktop Application");
+    res.set("CompanyName", "Example Corp");
+    res.set("LegalCopyright", "Copyright (c) Example Corp. MIT OR Apache-2.0");
+
+    if let Err(err) = res.compile() {
+        if require {
+            panic!("winresource failed: {err} (TEMPLATE_REQUIRE_WINRES=1)");
+        }
+        println!("cargo:warning=winresource failed ({err}); continuing without embedded resources");
+    }
+}

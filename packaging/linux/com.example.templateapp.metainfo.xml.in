@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.example.templateapp</id>
+  <name>TemplateApp</name>
+  <summary>High-performance Rust-native desktop application</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT OR Apache-2.0</project_license>
+  <developer id="com.example">
+    <name>Example Corp</name>
+  </developer>
+  <description>
+    <p>
+      TemplateApp is a clean-room, open-source, Rust-native cross-platform
+      desktop and WebAssembly application built on a strict L0-L7 layered
+      architecture with egui.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.example.templateapp.desktop</launchable>
+  <url type="homepage">https://github.com/example/native-template</url>
+  <url type="bugtracker">https://github.com/example/native-template/issues</url>
+  <url type="vcs-browser">https://github.com/example/native-template</url>
+  <provides>
+    <binary>template-desktop</binary>
+    <binary>template-cli</binary>
+    <mediatype>application/x-templateapp-project</mediatype>
+  </provides>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="@VERSION@" date="@DATE@" />
+  </releases>
+</component>
